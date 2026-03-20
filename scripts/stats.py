@@ -343,40 +343,41 @@ def compact_number(value: int) -> str:
 
 def render_svg(stats: dict[str, Any]) -> str:
     width = 860
-    height = 620
+    height = 640
 
-    colors = ["#58a6ff", "#3fb950", "#f2cc60", "#ff7b72", "#bc8cff"]
+    colors = ["#4f8cff", "#35c759", "#ffcc4d", "#ff7a6b", "#a974ff"]
     top_languages = stats["languages"][:5]
     total_language_size = sum(size for _, size in top_languages) or 1
 
     cards = [
-        ("Commits", compact_number(stats["commits"]), "#58a6ff"),
-        ("Contributions", compact_number(stats["contributions"]), "#3fb950"),
-        ("Pull Requests", compact_number(stats["pull_requests"]), "#f2cc60"),
-        ("Issues", compact_number(stats["issues"]), "#ff7b72"),
+        ("Commits sur 12 mois", str(stats["commits"]), "#4f8cff"),
+        ("Activite globale", compact_number(stats["contributions"]), "#35c759"),
+        ("Pull requests ouvertes", str(stats["pull_requests"]), "#ffcc4d"),
+        ("Issues ouvertes", str(stats["issues"]), "#ff7a6b"),
     ]
 
     card_svg: list[str] = []
     for index, (label, value, accent) in enumerate(cards):
         x = 40 + (index % 2) * 390
-        y = 132 + (index // 2) * 112
+        y = 152 + (index // 2) * 116
         card_svg.append(
             f"""
             <g transform="translate({x},{y})">
-              <rect width="350" height="86" rx="18" fill="#161b22" stroke="#30363d" />
-              <rect x="18" y="18" width="6" height="50" rx="3" fill="{accent}" />
-              <text x="40" y="36" fill="#8b949e" font-size="15">{escape(label)}</text>
-              <text x="40" y="63" fill="#f0f6fc" font-size="28" font-weight="700">{escape(value)}</text>
+              <rect width="350" height="92" rx="20" fill="#151922" stroke="#2a3140" />
+              <rect x="0" y="0" width="350" height="92" rx="20" fill="url(#cardGlow)" opacity="0.18" />
+              <rect x="18" y="20" width="7" height="52" rx="3.5" fill="{accent}" />
+              <text x="42" y="35" fill="#8f9bb3" font-size="14" font-weight="600" letter-spacing="0.3">{escape(label)}</text>
+              <text x="42" y="68" fill="#f7f9fc" font-size="32" font-weight="800">{escape(value)}</text>
             </g>
             """
         )
 
     language_svg: list[str] = []
     bar_x = 40
-    bar_y = 408
+    bar_y = 438
     current_x = bar_x
     bar_width = 780
-    bar_height = 18
+    bar_height = 16
 
     for index, (language, size) in enumerate(top_languages):
         segment_width = max(bar_width * size / total_language_size, 8)
@@ -388,7 +389,7 @@ def render_svg(stats: dict[str, Any]) -> str:
         current_x += segment_width
 
     legend_svg: list[str] = []
-    legend_y = 458
+    legend_y = 485
     for index, (language, size) in enumerate(top_languages):
         percent = (size / total_language_size) * 100
         x = 40 + (index % 2) * 390
@@ -408,35 +409,47 @@ def render_svg(stats: dict[str, Any]) -> str:
         languages_block = "".join(language_svg) + "".join(legend_svg)
     else:
         languages_block = """
-        <text x="40" y="470" fill="#8b949e" font-size="15">
-          Aucun langage exploitable trouve dans les repositories accessibles.
+        <text x="40" y="490" fill="#8b949e" font-size="15">
+          Aucun langage pertinent detecte sur les repositories accessibles.
         </text>
         """
 
-    scope_note = "Repos prives, orga et collaborations inclus" if stats["private_enabled"] else "Repos publics accessibles uniquement"
+    scope_note = "Repos prives, organisations et collaborations inclus" if stats["private_enabled"] else "Repos publics accessibles uniquement"
 
     return f"""<svg width="{width}" height="{height}" viewBox="0 0 {width} {height}" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="GitHub profile statistics">
   <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="860" y2="540" gradientUnits="userSpaceOnUse">
-      <stop stop-color="#0d1117" />
-      <stop offset="1" stop-color="#111827" />
+    <linearGradient id="bg" x1="0" y1="0" x2="860" y2="640" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0b0f17" />
+      <stop offset="0.52" stop-color="#101722" />
+      <stop offset="1" stop-color="#0d1320" />
+    </linearGradient>
+    <linearGradient id="hero" x1="40" y1="34" x2="240" y2="34" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#f7f9fc" />
+      <stop offset="1" stop-color="#8ab4ff" />
+    </linearGradient>
+    <linearGradient id="cardGlow" x1="0" y1="0" x2="350" y2="92" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#ffffff" />
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0" />
     </linearGradient>
   </defs>
   <rect width="{width}" height="{height}" rx="28" fill="url(#bg)" />
-  <rect x="16" y="16" width="{width - 32}" height="{height - 32}" rx="20" fill="transparent" stroke="#30363d" />
+  <rect x="16" y="16" width="{width - 32}" height="{height - 32}" rx="20" fill="none" stroke="#273042" />
+  <rect x="40" y="38" width="120" height="8" rx="4" fill="#4f8cff" opacity="0.9" />
   <style>
     text {{
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Ubuntu, "Helvetica Neue", Arial, sans-serif;
     }}
   </style>
-  <text x="40" y="62" fill="#f0f6fc" font-size="30" font-weight="700">@{escape(stats["username"])}</text>
-  <text x="40" y="92" fill="#8b949e" font-size="16">Statistiques GitHub dynamiques • {escape(stats["period_label"])}</text>
+  <text x="40" y="80" fill="#8f9bb3" font-size="13" font-weight="700" letter-spacing="1.4">GITHUB PROFILE OVERVIEW</text>
+  <text x="40" y="118" fill="url(#hero)" font-size="34" font-weight="800">@{escape(stats["username"])}</text>
+  <text x="40" y="140" fill="#93a0b8" font-size="15">Activite, code et langages dominants sur les {escape(stats["period_label"])}</text>
   {''.join(card_svg)}
-  <text x="40" y="372" fill="#f0f6fc" font-size="22" font-weight="700">Langages les plus utilises</text>
-  <text x="40" y="394" fill="#8b949e" font-size="14">Base sur les repositories accessibles via l'API GitHub et le token fourni</text>
+  <text x="40" y="395" fill="#f7f9fc" font-size="24" font-weight="800">Langages dominants</text>
+  <text x="40" y="418" fill="#8f9bb3" font-size="14">Calcul base sur les repositories accessibles via l'API GitHub</text>
   {languages_block}
-  <text x="40" y="560" fill="#8b949e" font-size="13">Commits = commits auteur detectes sur les repositories accessibles • Commit contributions profil = {escape(compact_number(stats["commit_contributions"]))}</text>
-  <text x="40" y="580" fill="#8b949e" font-size="13">Repos analyses: {stats["repositories"]} • {escape(scope_note)} • Genere le {escape(stats["generated_at"])}</text>
+  <text x="40" y="575" fill="#7f8aa3" font-size="13">Repos analyses: {stats["repositories"]} • {escape(scope_note)} • Contributions GitHub profile: {escape(compact_number(stats["commit_contributions"]))} commits contributifs</text>
+  <text x="40" y="600" fill="#69748c" font-size="13">Genere le {escape(stats["generated_at"])}</text>
+  <text x="670" y="600" fill="#8ab4ff" font-size="13" font-weight="700">Made by younesdev123</text>
 </svg>
 """
 
