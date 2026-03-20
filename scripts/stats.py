@@ -560,14 +560,12 @@ def render_svg(stats: dict[str, Any]) -> str:
     cards = [
         ("Commits sur 12 mois", compact_number(stats["commits"]) if stats["commits"] >= 10000 else str(stats["commits"]), "#4f8cff"),
         ("Activité globale", compact_number(stats["contributions"]), "#35c759"),
-        ("Pull requests ouvertes", str(stats["pull_requests"]), "#ffcc4d"),
-        ("Issues ouvertes", str(stats["issues"]), "#ff7a6b"),
     ]
 
     card_svg: list[str] = []
     for index, (label, value, accent) in enumerate(cards):
-        x = 40 + (index % 2) * 390
-        y = 152 + (index // 2) * 116
+        x = 40 + index * 390
+        y = 172
         card_svg.append(
             f"""
             <g transform="translate({x},{y})">
@@ -582,7 +580,7 @@ def render_svg(stats: dict[str, Any]) -> str:
 
     language_svg: list[str] = []
     bar_x = 40
-    bar_y = 438
+    bar_y = 330
     current_x = bar_x
     bar_width = 780
     bar_height = 16
@@ -597,7 +595,7 @@ def render_svg(stats: dict[str, Any]) -> str:
         current_x += segment_width
 
     legend_svg: list[str] = []
-    legend_y = 486
+    legend_y = 378
     for index, (language, size) in enumerate(top_languages):
         percent = (size / total_language_size) * 100
         x = 40 + (index % 2) * 390
@@ -617,13 +615,13 @@ def render_svg(stats: dict[str, Any]) -> str:
         languages_block = "".join(language_svg) + "".join(legend_svg)
     else:
         languages_block = """
-        <text x="40" y="490" fill="#8b949e" font-size="14">
+        <text x="40" y="382" fill="#8b949e" font-size="14">
           Aucun langage pertinent détecté sur les repositories accessibles.
         </text>
         """
 
     framework_rows: list[str] = []
-    framework_start_y = 690
+    framework_start_y = 565
     for index, (framework_name, count) in enumerate(top_frameworks):
         y = framework_start_y + index * 32
         bar_width = 250 * (count / max_framework_count)
@@ -639,7 +637,7 @@ def render_svg(stats: dict[str, Any]) -> str:
         )
 
     frameworks_block = "".join(framework_rows) if framework_rows else """
-      <text x="40" y="690" fill="#8b949e" font-size="14">
+      <text x="40" y="585" fill="#8b949e" font-size="14">
         Aucun framework clairement détecté sur les fichiers manifestes analysés.
       </text>
     """
@@ -670,12 +668,10 @@ def render_svg(stats: dict[str, Any]) -> str:
   </style>
   <text x="40" y="80" fill="#8f9bb3" font-size="13" font-weight="700" letter-spacing="1.4">GITHUB PROFILE OVERVIEW</text>
   <text x="40" y="118" fill="url(#hero)" font-size="32" font-weight="800">@{escape(stats["username"])}</text>
-  <text x="40" y="140" fill="#93a0b8" font-size="15">Activité, code et langages dominants sur les {escape(stats["period_label"])}</text>
   {''.join(card_svg)}
-  <text x="40" y="395" fill="#f7f9fc" font-size="24" font-weight="800">Langages dominants</text>
-  <text x="40" y="418" fill="#8f9bb3" font-size="14">Calcul basé sur les repositories accessibles via l'API GitHub</text>
+  <text x="40" y="287" fill="#f7f9fc" font-size="24" font-weight="800">Langages dominants</text>
   {languages_block}
-  <text x="40" y="650" fill="#f7f9fc" font-size="24" font-weight="800">Frameworks récurrents</text>
+  <text x="40" y="525" fill="#f7f9fc" font-size="24" font-weight="800">Frameworks récurrents</text>
   {frameworks_block}
   <text x="40" y="900" fill="#69748c" font-size="12">Généré le {escape(stats["generated_at"])}</text>
   <text x="655" y="900" fill="#8ab4ff" font-size="12" font-weight="700">Made by younesdev123</text>
