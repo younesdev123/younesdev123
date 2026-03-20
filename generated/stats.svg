@@ -1,76 +1,80 @@
-<svg width="860" height="540" viewBox="0 0 860 540" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="GitHub profile statistics">
+<svg width="860" height="620" viewBox="0 0 860 620" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="GitHub profile statistics">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="860" y2="540" gradientUnits="userSpaceOnUse">
       <stop stop-color="#0d1117" />
       <stop offset="1" stop-color="#111827" />
     </linearGradient>
   </defs>
-  <rect width="860" height="540" rx="28" fill="url(#bg)" />
-  <rect x="16" y="16" width="828" height="508" rx="20" fill="transparent" stroke="#30363d" />
+  <rect width="860" height="620" rx="28" fill="url(#bg)" />
+  <rect x="16" y="16" width="828" height="588" rx="20" fill="transparent" stroke="#30363d" />
+  <style>
+    text {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Ubuntu, "Helvetica Neue", Arial, sans-serif;
+    }
+  </style>
   <text x="40" y="62" fill="#f0f6fc" font-size="30" font-weight="700">@younesdev123</text>
   <text x="40" y="92" fill="#8b949e" font-size="16">Statistiques GitHub dynamiques • 365 derniers jours</text>
   
-            <g transform="translate(40,120)">
+            <g transform="translate(40,132)">
               <rect width="350" height="86" rx="18" fill="#161b22" stroke="#30363d" />
               <rect x="18" y="18" width="6" height="50" rx="3" fill="#58a6ff" />
               <text x="40" y="36" fill="#8b949e" font-size="15">Commits</text>
-              <text x="40" y="63" fill="#f0f6fc" font-size="28" font-weight="700">4</text>
+              <text x="40" y="63" fill="#f0f6fc" font-size="28" font-weight="700">6</text>
             </g>
             
-            <g transform="translate(430,120)">
+            <g transform="translate(430,132)">
               <rect width="350" height="86" rx="18" fill="#161b22" stroke="#30363d" />
               <rect x="18" y="18" width="6" height="50" rx="3" fill="#3fb950" />
               <text x="40" y="36" fill="#8b949e" font-size="15">Contributions</text>
-              <text x="40" y="63" fill="#f0f6fc" font-size="28" font-weight="700">110</text>
+              <text x="40" y="63" fill="#f0f6fc" font-size="28" font-weight="700">2.2k</text>
             </g>
             
-            <g transform="translate(40,230)">
+            <g transform="translate(40,244)">
               <rect width="350" height="86" rx="18" fill="#161b22" stroke="#30363d" />
               <rect x="18" y="18" width="6" height="50" rx="3" fill="#f2cc60" />
               <text x="40" y="36" fill="#8b949e" font-size="15">Pull Requests</text>
-              <text x="40" y="63" fill="#f0f6fc" font-size="28" font-weight="700">0</text>
+              <text x="40" y="63" fill="#f0f6fc" font-size="28" font-weight="700">2</text>
             </g>
             
-            <g transform="translate(430,230)">
+            <g transform="translate(430,244)">
               <rect width="350" height="86" rx="18" fill="#161b22" stroke="#30363d" />
               <rect x="18" y="18" width="6" height="50" rx="3" fill="#ff7b72" />
               <text x="40" y="36" fill="#8b949e" font-size="15">Issues</text>
               <text x="40" y="63" fill="#f0f6fc" font-size="28" font-weight="700">0</text>
             </g>
             
-  <text x="40" y="346" fill="#f0f6fc" font-size="22" font-weight="700">Langages les plus utilises</text>
-  <text x="40" y="392" fill="#8b949e" font-size="14">Calcul base sur les octets declares par repository via l'API GitHub</text>
-  <rect x="40.00" y="365" width="300.28" height="20" fill="#58a6ff" rx="6" /><rect x="340.28" y="365" width="254.45" height="20" fill="#3fb950" rx="6" /><rect x="594.74" y="365" width="176.24" height="20" fill="#f2cc60" rx="6" /><rect x="770.98" y="365" width="33.24" height="20" fill="#ff7b72" rx="6" /><rect x="804.22" y="365" width="15.78" height="20" fill="#bc8cff" rx="6" />
-  
-            <g transform="translate(40,420)">
+  <text x="40" y="372" fill="#f0f6fc" font-size="22" font-weight="700">Langages les plus utilises</text>
+  <text x="40" y="394" fill="#8b949e" font-size="14">Base sur les repositories accessibles via l'API GitHub et le token fourni</text>
+  <rect x="40.00" y="408" width="231.81" height="18" fill="#58a6ff" rx="6" /><rect x="271.81" y="408" width="222.56" height="18" fill="#3fb950" rx="6" /><rect x="494.36" y="408" width="170.98" height="18" fill="#f2cc60" rx="6" /><rect x="665.34" y="408" width="129.72" height="18" fill="#ff7b72" rx="6" /><rect x="795.06" y="408" width="24.94" height="18" fill="#bc8cff" rx="6" />
+            <g transform="translate(40,458)">
               <circle cx="8" cy="8" r="8" fill="#58a6ff" />
-              <text x="24" y="12" fill="#c9d1d9" font-size="15">JavaScript</text>
-              <text x="220" y="12" fill="#8b949e" font-size="15">38.5%</text>
+              <text x="24" y="12" fill="#c9d1d9" font-size="15" font-weight="600">JavaScript</text>
+              <text x="290" y="12" fill="#8b949e" font-size="14" text-anchor="end">29.7%</text>
             </g>
             
-            <g transform="translate(430,420)">
+            <g transform="translate(430,458)">
               <circle cx="8" cy="8" r="8" fill="#3fb950" />
-              <text x="24" y="12" fill="#c9d1d9" font-size="15">HTML</text>
-              <text x="220" y="12" fill="#8b949e" font-size="15">32.6%</text>
+              <text x="24" y="12" fill="#c9d1d9" font-size="15" font-weight="600">HTML</text>
+              <text x="290" y="12" fill="#8b949e" font-size="14" text-anchor="end">28.5%</text>
             </g>
             
-            <g transform="translate(40,454)">
+            <g transform="translate(40,500)">
               <circle cx="8" cy="8" r="8" fill="#f2cc60" />
-              <text x="24" y="12" fill="#c9d1d9" font-size="15">PHP</text>
-              <text x="220" y="12" fill="#8b949e" font-size="15">22.6%</text>
+              <text x="24" y="12" fill="#c9d1d9" font-size="15" font-weight="600">C#</text>
+              <text x="290" y="12" fill="#8b949e" font-size="14" text-anchor="end">21.9%</text>
             </g>
             
-            <g transform="translate(430,454)">
+            <g transform="translate(430,500)">
               <circle cx="8" cy="8" r="8" fill="#ff7b72" />
-              <text x="24" y="12" fill="#c9d1d9" font-size="15">CSS</text>
-              <text x="220" y="12" fill="#8b949e" font-size="15">4.3%</text>
+              <text x="24" y="12" fill="#c9d1d9" font-size="15" font-weight="600">PHP</text>
+              <text x="290" y="12" fill="#8b949e" font-size="14" text-anchor="end">16.6%</text>
             </g>
             
-            <g transform="translate(40,488)">
+            <g transform="translate(40,542)">
               <circle cx="8" cy="8" r="8" fill="#bc8cff" />
-              <text x="24" y="12" fill="#c9d1d9" font-size="15">Lua</text>
-              <text x="220" y="12" fill="#8b949e" font-size="15">2.0%</text>
+              <text x="24" y="12" fill="#c9d1d9" font-size="15" font-weight="600">CSS</text>
+              <text x="290" y="12" fill="#8b949e" font-size="14" text-anchor="end">3.2%</text>
             </g>
             
-  <text x="40" y="510" fill="#8b949e" font-size="13">Repos analyses: 63 • Repos prives inclus • Genere le 2026-03-20 03:31 UTC</text>
+  <text x="40" y="580" fill="#8b949e" font-size="13">Repos analyses: 96 • Repos prives, orga et collaborations inclus • Genere le 2026-03-20 03:49 UTC</text>
 </svg>
