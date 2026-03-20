@@ -1,8 +1,10 @@
 # 👋 Hello, moi c’est Younes
 
-Développeur fullstack avec ~5 ans d’expérience.
+Développeur fullstack avec environ 5 ans d’expérience.
 
-J’ai principalement occupé des postes frontend, tout en développant en parallèle des projets backend (APIs, temps réel, automation).
+J’ai surtout travaillé sur des projets frontend, mais en parallèle j’ai beaucoup développé côté backend sur mes projets perso (APIs, temps réel, automation, etc.).
+
+J’aime bien bosser sur des systèmes un peu dynamiques (temps réel, automatisation, data…) et essayer de faire des choses propres et efficaces.
 
 ---
 
@@ -14,7 +16,7 @@ J’ai principalement occupé des postes frontend, tout en développant en paral
 - MongoDB (Mongoose)
 - Redis (pub/sub)
 - Socket.io (temps réel)
-- JWT / Auth / rôles
+- JWT / gestion d’authentification
 
 ### 🎨 Frontend
 
@@ -31,103 +33,116 @@ J’ai principalement occupé des postes frontend, tout en développant en paral
 
 ## 🧩 Autres technos & expériences
 
-- C# (.NET, WinForms, WebSocket server, outils desktop)
+- C# (.NET, WinForms, outils desktop, WebSocket)
 - PHP (Laravel)
 - API REST
-- WebSocket (temps réel avancé)
-- PM2 (cluster Node.js)
-- Docker (création et gestion de containers)
+- Docker (containers)
 - Linux (Ubuntu)
-- Nginx / Apache2 (configuration serveur)
-- MySQL (installation, configuration)
-- Playwright (automatisation navigateur / scraping)
+- Nginx / Apache2
+- MySQL
+- Playwright (automatisation navigateur)
 - Bots Discord (Node.js)
-- Architecture scalable
-- Automatisation / bots
+- PM2 (gestion de process Node.js)
+- Git
+
+### + quelques sujets que j’ai explorés :
+
+- OpenAI API (intégration IA)
+- Computer Vision avec YOLO (détection d’objets)
+- Communication temps réel (WebSocket / TCP)
+- Structuration d’APIs et petits systèmes backend
 
 ---
 
-## ⚡ Spécialités
+## ⚡ Ce que j’aime faire
 
-- Temps réel (Socket.io, WebSocket)
-- Automatisation (Playwright, bots)
-- Scraping / collecte de données (usage encadré)
-- Communication multi-services (Redis, sockets)
-- Architectures orientées performance
-- Systèmes distribués (bots + panel temps réel)
+- Le temps réel (Socket.io, WebSocket)
+- L’automatisation (Playwright, bots)
+- Les systèmes où plusieurs services communiquent entre eux
+- L’optimisation et la performance quand c’est nécessaire
+- Tester des trucs un peu différents (IA, image, etc.)
 
 ---
 
 ## 💡 Ce que je fais concrètement
 
-- Développement d’APIs performantes et sécurisées
-- Systèmes temps réel (communication multi-clients via Socket.io)
-- Panels d’administration (Nuxt + WebSocket)
-- Développement frontend avec Vue.js (Options API & Composition API) et Nuxt 2 / 3
-- Communication backend ↔ frontend en temps réel
-- Outils automatisés (bots, scraping, gestion de comptes)
-- Automatisation de navigation et collecte de données (Playwright, dans le respect des contraintes des plateformes)
-- Développement de bots (Discord, automatisation de tâches)
-- Applications desktop connectées à des services web (C#)
-- Déploiement et configuration serveur (Linux, Nginx, Docker)
-- Gestion de données complexes (MongoDB)
+- Développement d’APIs Node.js
+- Mise en place de systèmes temps réel (Socket.io)
+- Création de panels (Nuxt + WebSocket)
+- Développement frontend (Vue 2/3, Nuxt 2/3)
+- Automatisation de tâches (bots, scripts, Playwright)
+- Déploiement de projets (Linux, Docker, Nginx)
+- Gestion de données (MongoDB)
+- Tests autour de l’IA (OpenAI) et de la vision (YOLO)
 
 ---
 
 ## 🚀 Projets (exemples)
 
-🔹 Bot temps réel & panel admin
+🔹 Bot temps réel + panel
 
 - Backend Node.js + Socket.io
 - Frontend Nuxt 3
-- Communication temps réel multi-clients
-- Auth JWT + rôles
-- Redis (pub/sub)
-- Déploiement avec PM2
+- Gestion multi-clients en temps réel
+- Auth + rôles
+- Redis pour la communication
 
-🔹 Système automatisé distribué
+---
+
+🔹 Système automatisé
 
 - API Express + MongoDB
-- Dashboard admin temps réel
-- Communication inter-services
-- Monitoring et traitement de données
+- Dashboard en temps réel
+- Communication entre services
+- Traitement de données
 
-🔹 Bots & automatisation
+---
 
-- Bots Discord (Node.js)
-- Automatisation navigateur avec Playwright
-- Scripts de collecte de données
-- Gestion de tâches automatisées
+🔹 Automatisation
 
-👉 D’autres projets sont privés, je peux faire une démo ou détailler l’architecture sur demande.
+- Bots Discord
+- Scripts Playwright
+- Collecte de données
+- Automatisation de tâches
+
+---
+
+🔹 Computer Vision (YOLO)
+
+- Création d’un dataset (images annotées)
+- Entraînement d’un modèle
+- Détection d’objets sur des captures écran
+- Comptage et analyse d’éléments visuels
+
+👉 La majorité de mes projets sont privés, mais je peux expliquer ou faire une démo.
 
 ---
 
 ## 🧪 Expérience
 
-- ~5 ans en développement web & logiciel
-- Fullstack (frontend + backend)
-- 3+ ans en backend Node.js (projets personnels avancés)
-- Expérience avec AWS (Cognito notamment)
-- Développement de systèmes complets (API + frontend + outils clients)
+- ~5 ans en développement web
+- Principalement frontend en pro
+- Backend surtout via projets perso
+- Expérience avec AWS (Cognito)
+- Développement de projets complets (front + back + outils)
 
 ---
 
 ## 🎯 Objectif
 
-Construire des systèmes fiables, performants et propres, avec une vraie attention sur la qualité du code et la scalabilité.
+Continuer à progresser côté backend, architecture et systèmes temps réel, tout en gardant une vision fullstack.
 
 ---
 
 ## 📌 Important
 
-La majorité de mes projets sont privés (projets clients et outils personnels).
+La plupart de mes projets sont privés.
 
 👉 Je peux :
 
-- présenter du code
-- faire une démo technique
-- détailler l’architecture
+- montrer du code
+- expliquer mes projets
+- détailler mes choix techniques
 
 ---
 
