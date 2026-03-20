@@ -622,8 +622,6 @@ def render_svg(stats: dict[str, Any]) -> str:
         </text>
         """
 
-    scope_note = "Repos privés, organisations et collaborations inclus" if stats["private_enabled"] else "Repos publics accessibles uniquement"
-
     framework_rows: list[str] = []
     framework_start_y = 690
     for index, (framework_name, count) in enumerate(top_frameworks):
@@ -678,9 +676,7 @@ def render_svg(stats: dict[str, Any]) -> str:
   <text x="40" y="418" fill="#8f9bb3" font-size="14">Calcul basé sur les repositories accessibles via l'API GitHub</text>
   {languages_block}
   <text x="40" y="650" fill="#f7f9fc" font-size="24" font-weight="800">Frameworks récurrents</text>
-  <text x="40" y="673" fill="#8f9bb3" font-size="14">Détection heuristique à partir des manifests racine les plus fréquents</text>
   {frameworks_block}
-  <text x="40" y="875" fill="#7f8aa3" font-size="12">Repos analysés : {stats["repositories"]} • {escape(scope_note)} • Profil GitHub : {escape(compact_number(stats["commit_contributions"]))} commits contributifs</text>
   <text x="40" y="900" fill="#69748c" font-size="12">Généré le {escape(stats["generated_at"])}</text>
   <text x="655" y="900" fill="#8ab4ff" font-size="12" font-weight="700">Made by younesdev123</text>
 </svg>
