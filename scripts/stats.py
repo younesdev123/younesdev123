@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 import os
+import sys
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
 from html import escape
@@ -49,6 +50,10 @@ def parse_tokens() -> list[str]:
         raise RuntimeError("Aucun token GitHub exploitable n'a ete fourni.")
 
     return deduped_tokens
+
+
+def log(message: str) -> None:
+    print(f"[stats] {message}", file=sys.stderr)
 
 
 def github_request(url: str, token: str, method: str = "GET", data: dict[str, Any] | None = None) -> Any:
@@ -233,6 +238,7 @@ def fetch_stats(username: str, tokens: list[str]) -> dict[str, Any]:
     }
 
     primary_token = tokens[0]
+    log(f"Tokens detectes: {len(tokens)}")
     data = graphql(query, variables, primary_token)
     user = data.get("user")
     if not user:
@@ -240,10 +246,12 @@ def fetch_stats(username: str, tokens: list[str]) -> dict[str, Any]:
 
     repositories: list[tuple[dict[str, Any], str]] = []
     seen_repo_ids: set[int] = set()
-    for token in tokens:
+    for index, token in enumerate(tokens, start=1):
         try:
             current_repositories = fetch_accessible_repositories(token)
-        except RuntimeError:
+            log(f"Token #{index}: {len(current_repositories)} repositories accessibles")
+        except RuntimeError as exc:
+            log(f"Token #{index}: erreur d'acces API: {exc}")
             continue
 
         for repo, repo_token in current_repositories:
@@ -254,9 +262,12 @@ def fetch_stats(username: str, tokens: list[str]) -> dict[str, Any]:
             repositories.append((repo, repo_token))
 
     if not repositories:
+        log("Aucun repository accessible via la liste de tokens, fallback sur le token principal")
         repositories = [(repo, primary_token) for repo in fetch_all_repositories(username, primary_token)]
 
     languages = aggregate_languages(repositories)
+    log(f"Repositories uniques retenus: {len(repositories)}")
+    log(f"Langages agreges: {len(languages)}")
 
     return {
         "username": username,
