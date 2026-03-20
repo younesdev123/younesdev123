@@ -4,6 +4,8 @@ from __future__ import annotations
 import json
 import os
 import sys
+import xml.etree.ElementTree as ET
+from base64 import b64decode
 from collections import defaultdict
 from datetime import datetime, timedelta, timezone
 from html import escape
@@ -47,7 +49,7 @@ def parse_tokens() -> list[str]:
         deduped_tokens.append(token)
 
     if not deduped_tokens:
-        raise RuntimeError("Aucun token GitHub exploitable n'a ete fourni.")
+        raise RuntimeError("Aucun token GitHub exploitable n'a été fourni.")
 
     return deduped_tokens
 
@@ -206,6 +208,207 @@ def aggregate_languages(repositories: list[tuple[dict[str, Any], str]]) -> list[
     return sorted(language_totals.items(), key=lambda item: item[1], reverse=True)
 
 
+FRAMEWORK_RULES = {
+    "package.json": {
+        "dependencies": {
+            "vue": "Vue",
+            "nuxt": "Nuxt",
+            "react": "React",
+            "next": "Next.js",
+            "express": "Express",
+            "@nestjs/core": "NestJS",
+            "socket.io": "Socket.IO",
+            "fastify": "Fastify",
+            "svelte": "Svelte",
+            "@angular/core": "Angular",
+        }
+    },
+    "composer.json": {
+        "dependencies": {
+            "laravel/framework": "Laravel",
+            "symfony/symfony": "Symfony",
+            "symfony/framework-bundle": "Symfony",
+            "livewire/livewire": "Livewire",
+        }
+    },
+    "requirements.txt": {
+        "dependencies": {
+            "django": "Django",
+            "fastapi": "FastAPI",
+            "flask": "Flask",
+        }
+    },
+    "pyproject.toml": {
+        "dependencies": {
+            "django": "Django",
+            "fastapi": "FastAPI",
+            "flask": "Flask",
+        }
+    },
+    "*.csproj": {
+        "dependencies": {
+            "Microsoft.AspNetCore.App": "ASP.NET",
+            "Microsoft.NET.Sdk.Web": "ASP.NET",
+            "Microsoft.AspNetCore": "ASP.NET",
+        }
+    },
+}
+
+
+def fetch_file_content(owner: str, repo_name: str, path: str, token: str) -> str | None:
+    url = f"{API_REST}/repos/{owner}/{repo_name}/contents/{path}"
+    try:
+        payload = github_request(url, token)
+    except RuntimeError:
+        return None
+
+    if isinstance(payload, list):
+        return None
+
+    content = payload.get("content")
+    encoding = payload.get("encoding")
+    if not content or encoding != "base64":
+        return None
+
+    try:
+        return b64decode(content).decode("utf-8", errors="ignore")
+    except Exception:
+        return None
+
+
+def fetch_repo_root(owner: str, repo_name: str, token: str) -> list[dict[str, Any]]:
+    url = f"{API_REST}/repos/{owner}/{repo_name}/contents"
+    try:
+        payload = github_request(url, token)
+    except RuntimeError:
+        return []
+
+    if not isinstance(payload, list):
+        return []
+
+    return payload
+
+
+def detect_frameworks_in_package_json(content: str) -> set[str]:
+    detected: set[str] = set()
+    try:
+        data = json.loads(content)
+    except json.JSONDecodeError:
+        return detected
+
+    merged_dependencies: dict[str, Any] = {}
+    for key in ("dependencies", "devDependencies", "peerDependencies"):
+        value = data.get(key)
+        if isinstance(value, dict):
+            merged_dependencies.update(value)
+
+    for dependency_name, framework_name in FRAMEWORK_RULES["package.json"]["dependencies"].items():
+        if dependency_name in merged_dependencies:
+            detected.add(framework_name)
+
+    return detected
+
+
+def detect_frameworks_in_composer_json(content: str) -> set[str]:
+    detected: set[str] = set()
+    try:
+        data = json.loads(content)
+    except json.JSONDecodeError:
+        return detected
+
+    merged_dependencies: dict[str, Any] = {}
+    for key in ("require", "require-dev"):
+        value = data.get(key)
+        if isinstance(value, dict):
+            merged_dependencies.update(value)
+
+    for dependency_name, framework_name in FRAMEWORK_RULES["composer.json"]["dependencies"].items():
+        if dependency_name in merged_dependencies:
+            detected.add(framework_name)
+
+    return detected
+
+
+def detect_frameworks_in_requirements(content: str) -> set[str]:
+    detected: set[str] = set()
+    lines = [line.strip().lower() for line in content.splitlines() if line.strip() and not line.strip().startswith("#")]
+    for dependency_name, framework_name in FRAMEWORK_RULES["requirements.txt"]["dependencies"].items():
+        if any(line.startswith(dependency_name) for line in lines):
+            detected.add(framework_name)
+    return detected
+
+
+def detect_frameworks_in_pyproject(content: str) -> set[str]:
+    detected: set[str] = set()
+    lower_content = content.lower()
+    for dependency_name, framework_name in FRAMEWORK_RULES["pyproject.toml"]["dependencies"].items():
+        if dependency_name in lower_content:
+            detected.add(framework_name)
+    return detected
+
+
+def detect_frameworks_in_csproj(content: str) -> set[str]:
+    detected: set[str] = set()
+    try:
+        root = ET.fromstring(content)
+    except ET.ParseError:
+        return detected
+
+    xml_blob = ET.tostring(root, encoding="unicode").lower()
+    for dependency_name, framework_name in FRAMEWORK_RULES["*.csproj"]["dependencies"].items():
+        if dependency_name.lower() in xml_blob:
+            detected.add(framework_name)
+    return detected
+
+
+def detect_frameworks(repositories: list[tuple[dict[str, Any], str]]) -> list[tuple[str, int]]:
+    framework_totals: dict[str, int] = defaultdict(int)
+
+    for repo, token in repositories:
+        if repo.get("fork") or repo.get("archived") or repo.get("disabled"):
+            continue
+
+        owner = repo.get("owner", {}).get("login")
+        repo_name = repo.get("name")
+        if not owner or not repo_name:
+            continue
+
+        detected: set[str] = set()
+        root_entries = fetch_repo_root(owner, repo_name, token)
+        root_file_names = {entry.get("name", "") for entry in root_entries if entry.get("type") == "file"}
+
+        if "package.json" in root_file_names:
+            content = fetch_file_content(owner, repo_name, "package.json", token)
+            if content:
+                detected.update(detect_frameworks_in_package_json(content))
+
+        if "composer.json" in root_file_names:
+            content = fetch_file_content(owner, repo_name, "composer.json", token)
+            if content:
+                detected.update(detect_frameworks_in_composer_json(content))
+
+        if "requirements.txt" in root_file_names:
+            content = fetch_file_content(owner, repo_name, "requirements.txt", token)
+            if content:
+                detected.update(detect_frameworks_in_requirements(content))
+
+        if "pyproject.toml" in root_file_names:
+            content = fetch_file_content(owner, repo_name, "pyproject.toml", token)
+            if content:
+                detected.update(detect_frameworks_in_pyproject(content))
+
+        csproj_files = [name for name in root_file_names if name.endswith(".csproj")]
+        for csproj_file in csproj_files[:3]:
+            content = fetch_file_content(owner, repo_name, csproj_file, token)
+            if content:
+                detected.update(detect_frameworks_in_csproj(content))
+
+        for framework_name in detected:
+            framework_totals[framework_name] += 1
+
+    return sorted(framework_totals.items(), key=lambda item: item[1], reverse=True)
+
+
 def count_paginated_items(url: str, token: str) -> int:
     total = 0
     page = 1
@@ -298,7 +501,7 @@ def fetch_stats(username: str, tokens: list[str]) -> dict[str, Any]:
             current_repositories = fetch_accessible_repositories(token)
             log(f"Token #{index}: {len(current_repositories)} repositories accessibles")
         except RuntimeError as exc:
-            log(f"Token #{index}: erreur d'acces API: {exc}")
+            log(f"Token #{index}: erreur d'accès API : {exc}")
             continue
 
         for repo, repo_token in current_repositories:
@@ -309,14 +512,16 @@ def fetch_stats(username: str, tokens: list[str]) -> dict[str, Any]:
             repositories.append((repo, repo_token))
 
     if not repositories:
-        log("Aucun repository accessible via la liste de tokens, fallback sur le token principal")
+        log("Aucun repository accessible via la liste de tokens, repli sur le token principal")
         repositories = [(repo, primary_token) for repo in fetch_all_repositories(username, primary_token)]
 
     languages = aggregate_languages(repositories)
+    frameworks = detect_frameworks(repositories)
     authored_commits = count_author_commits(username, repositories, start_date)
     log(f"Repositories uniques retenus: {len(repositories)}")
-    log(f"Langages agreges: {len(languages)}")
-    log(f"Commits auteur agreges: {authored_commits}")
+    log(f"Langages agrégés : {len(languages)}")
+    log(f"Frameworks agrégés : {len(frameworks)}")
+    log(f"Commits auteur agrégés : {authored_commits}")
 
     return {
         "username": username,
@@ -328,6 +533,7 @@ def fetch_stats(username: str, tokens: list[str]) -> dict[str, Any]:
         "pull_requests": data["pullRequests"]["issueCount"],
         "issues": data["issues"]["issueCount"],
         "languages": languages,
+        "frameworks": frameworks,
         "repositories": len(repositories),
         "private_enabled": any(repo.get("private") for repo, _ in repositories),
     }
@@ -343,15 +549,17 @@ def compact_number(value: int) -> str:
 
 def render_svg(stats: dict[str, Any]) -> str:
     width = 860
-    height = 640
+    height = 940
 
     colors = ["#4f8cff", "#35c759", "#ffcc4d", "#ff7a6b", "#a974ff"]
     top_languages = stats["languages"][:5]
     total_language_size = sum(size for _, size in top_languages) or 1
+    top_frameworks = stats["frameworks"][:6]
+    max_framework_count = max((count for _, count in top_frameworks), default=1)
 
     cards = [
-        ("Commits sur 12 mois", str(stats["commits"]), "#4f8cff"),
-        ("Activite globale", compact_number(stats["contributions"]), "#35c759"),
+        ("Commits sur 12 mois", compact_number(stats["commits"]) if stats["commits"] >= 10000 else str(stats["commits"]), "#4f8cff"),
+        ("Activité globale", compact_number(stats["contributions"]), "#35c759"),
         ("Pull requests ouvertes", str(stats["pull_requests"]), "#ffcc4d"),
         ("Issues ouvertes", str(stats["issues"]), "#ff7a6b"),
     ]
@@ -366,8 +574,8 @@ def render_svg(stats: dict[str, Any]) -> str:
               <rect width="350" height="92" rx="20" fill="#151922" stroke="#2a3140" />
               <rect x="0" y="0" width="350" height="92" rx="20" fill="url(#cardGlow)" opacity="0.18" />
               <rect x="18" y="20" width="7" height="52" rx="3.5" fill="{accent}" />
-              <text x="42" y="35" fill="#8f9bb3" font-size="14" font-weight="600" letter-spacing="0.3">{escape(label)}</text>
-              <text x="42" y="68" fill="#f7f9fc" font-size="32" font-weight="800">{escape(value)}</text>
+              <text x="42" y="35" fill="#8f9bb3" font-size="13" font-weight="600" letter-spacing="0.2">{escape(label)}</text>
+              <text x="42" y="68" fill="#f7f9fc" font-size="30" font-weight="800">{escape(value)}</text>
             </g>
             """
         )
@@ -389,18 +597,18 @@ def render_svg(stats: dict[str, Any]) -> str:
         current_x += segment_width
 
     legend_svg: list[str] = []
-    legend_y = 485
+    legend_y = 486
     for index, (language, size) in enumerate(top_languages):
         percent = (size / total_language_size) * 100
         x = 40 + (index % 2) * 390
-        y = legend_y + (index // 2) * 42
+        y = legend_y + (index // 2) * 40
         color = colors[index % len(colors)]
         legend_svg.append(
             f"""
             <g transform="translate({x},{y})">
               <circle cx="8" cy="8" r="8" fill="{color}" />
-              <text x="24" y="12" fill="#c9d1d9" font-size="15" font-weight="600">{escape(language)}</text>
-              <text x="290" y="12" fill="#8b949e" font-size="14" text-anchor="end">{percent:.1f}%</text>
+              <text x="24" y="12" fill="#c9d1d9" font-size="14" font-weight="600">{escape(language)}</text>
+              <text x="290" y="12" fill="#8b949e" font-size="13" text-anchor="end">{percent:.1f}%</text>
             </g>
             """
         )
@@ -409,16 +617,38 @@ def render_svg(stats: dict[str, Any]) -> str:
         languages_block = "".join(language_svg) + "".join(legend_svg)
     else:
         languages_block = """
-        <text x="40" y="490" fill="#8b949e" font-size="15">
-          Aucun langage pertinent detecte sur les repositories accessibles.
+        <text x="40" y="490" fill="#8b949e" font-size="14">
+          Aucun langage pertinent détecté sur les repositories accessibles.
         </text>
         """
 
-    scope_note = "Repos prives, organisations et collaborations inclus" if stats["private_enabled"] else "Repos publics accessibles uniquement"
+    scope_note = "Repos privés, organisations et collaborations inclus" if stats["private_enabled"] else "Repos publics accessibles uniquement"
+
+    framework_rows: list[str] = []
+    framework_start_y = 690
+    for index, (framework_name, count) in enumerate(top_frameworks):
+        y = framework_start_y + index * 32
+        bar_width = 250 * (count / max_framework_count)
+        framework_rows.append(
+            f"""
+            <g transform="translate(40,{y})">
+              <text x="0" y="13" fill="#c9d1d9" font-size="14" font-weight="600">{escape(framework_name)}</text>
+              <rect x="190" y="0" width="250" height="12" rx="6" fill="#1b2230" />
+              <rect x="190" y="0" width="{bar_width:.2f}" height="12" rx="6" fill="#4f8cff" />
+              <text x="500" y="12" fill="#8f9bb3" font-size="13" text-anchor="end">{count} repo{"s" if count > 1 else ""}</text>
+            </g>
+            """
+        )
+
+    frameworks_block = "".join(framework_rows) if framework_rows else """
+      <text x="40" y="690" fill="#8b949e" font-size="14">
+        Aucun framework clairement détecté sur les fichiers manifestes analysés.
+      </text>
+    """
 
     return f"""<svg width="{width}" height="{height}" viewBox="0 0 {width} {height}" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="GitHub profile statistics">
   <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="860" y2="640" gradientUnits="userSpaceOnUse">
+    <linearGradient id="bg" x1="0" y1="0" x2="860" y2="940" gradientUnits="userSpaceOnUse">
       <stop stop-color="#0b0f17" />
       <stop offset="0.52" stop-color="#101722" />
       <stop offset="1" stop-color="#0d1320" />
@@ -441,15 +671,18 @@ def render_svg(stats: dict[str, Any]) -> str:
     }}
   </style>
   <text x="40" y="80" fill="#8f9bb3" font-size="13" font-weight="700" letter-spacing="1.4">GITHUB PROFILE OVERVIEW</text>
-  <text x="40" y="118" fill="url(#hero)" font-size="34" font-weight="800">@{escape(stats["username"])}</text>
-  <text x="40" y="140" fill="#93a0b8" font-size="15">Activite, code et langages dominants sur les {escape(stats["period_label"])}</text>
+  <text x="40" y="118" fill="url(#hero)" font-size="32" font-weight="800">@{escape(stats["username"])}</text>
+  <text x="40" y="140" fill="#93a0b8" font-size="15">Activité, code et langages dominants sur les {escape(stats["period_label"])}</text>
   {''.join(card_svg)}
   <text x="40" y="395" fill="#f7f9fc" font-size="24" font-weight="800">Langages dominants</text>
-  <text x="40" y="418" fill="#8f9bb3" font-size="14">Calcul base sur les repositories accessibles via l'API GitHub</text>
+  <text x="40" y="418" fill="#8f9bb3" font-size="14">Calcul basé sur les repositories accessibles via l'API GitHub</text>
   {languages_block}
-  <text x="40" y="575" fill="#7f8aa3" font-size="13">Repos analyses: {stats["repositories"]} • {escape(scope_note)} • Contributions GitHub profile: {escape(compact_number(stats["commit_contributions"]))} commits contributifs</text>
-  <text x="40" y="600" fill="#69748c" font-size="13">Genere le {escape(stats["generated_at"])}</text>
-  <text x="670" y="600" fill="#8ab4ff" font-size="13" font-weight="700">Made by younesdev123</text>
+  <text x="40" y="650" fill="#f7f9fc" font-size="24" font-weight="800">Frameworks récurrents</text>
+  <text x="40" y="673" fill="#8f9bb3" font-size="14">Détection heuristique à partir des manifests racine les plus fréquents</text>
+  {frameworks_block}
+  <text x="40" y="875" fill="#7f8aa3" font-size="12">Repos analysés : {stats["repositories"]} • {escape(scope_note)} • Profil GitHub : {escape(compact_number(stats["commit_contributions"]))} commits contributifs</text>
+  <text x="40" y="900" fill="#69748c" font-size="12">Généré le {escape(stats["generated_at"])}</text>
+  <text x="655" y="900" fill="#8ab4ff" font-size="12" font-weight="700">Made by younesdev123</text>
 </svg>
 """
 
