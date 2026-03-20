@@ -206,6 +206,53 @@ def aggregate_languages(repositories: list[tuple[dict[str, Any], str]]) -> list[
     return sorted(language_totals.items(), key=lambda item: item[1], reverse=True)
 
 
+def count_paginated_items(url: str, token: str) -> int:
+    total = 0
+    page = 1
+
+    while True:
+        separator = "&" if "?" in url else "?"
+        current_page = github_request(f"{url}{separator}per_page=100&page={page}", token)
+        if not current_page:
+            break
+        total += len(current_page)
+        if len(current_page) < 100:
+            break
+        page += 1
+
+    return total
+
+
+def count_author_commits(username: str, repositories: list[tuple[dict[str, Any], str]], start_date: datetime) -> int:
+    total_commits = 0
+
+    for repo, token in repositories:
+        if repo.get("archived") or repo.get("disabled"):
+            continue
+
+        owner = repo.get("owner", {}).get("login")
+        name = repo.get("name")
+        if not owner or not name:
+            continue
+
+        params = urlencode(
+            {
+                "author": username,
+                "since": start_date.isoformat(),
+            }
+        )
+        commits_url = f"{API_REST}/repos/{owner}/{name}/commits?{params}"
+
+        try:
+            repo_commit_count = count_paginated_items(commits_url, token)
+        except RuntimeError:
+            continue
+
+        total_commits += repo_commit_count
+
+    return total_commits
+
+
 def fetch_stats(username: str, tokens: list[str]) -> dict[str, Any]:
     end_date = datetime.now(timezone.utc)
     start_date = end_date - timedelta(days=365)
@@ -266,14 +313,17 @@ def fetch_stats(username: str, tokens: list[str]) -> dict[str, Any]:
         repositories = [(repo, primary_token) for repo in fetch_all_repositories(username, primary_token)]
 
     languages = aggregate_languages(repositories)
+    authored_commits = count_author_commits(username, repositories, start_date)
     log(f"Repositories uniques retenus: {len(repositories)}")
     log(f"Langages agreges: {len(languages)}")
+    log(f"Commits auteur agreges: {authored_commits}")
 
     return {
         "username": username,
         "generated_at": end_date.strftime("%Y-%m-%d %H:%M UTC"),
         "period_label": "365 derniers jours",
-        "commits": user["contributionsCollection"]["totalCommitContributions"],
+        "commits": authored_commits,
+        "commit_contributions": user["contributionsCollection"]["totalCommitContributions"],
         "contributions": user["contributionsCollection"]["contributionCalendar"]["totalContributions"],
         "pull_requests": data["pullRequests"]["issueCount"],
         "issues": data["issues"]["issueCount"],
@@ -385,6 +435,7 @@ def render_svg(stats: dict[str, Any]) -> str:
   <text x="40" y="372" fill="#f0f6fc" font-size="22" font-weight="700">Langages les plus utilises</text>
   <text x="40" y="394" fill="#8b949e" font-size="14">Base sur les repositories accessibles via l'API GitHub et le token fourni</text>
   {languages_block}
+  <text x="40" y="560" fill="#8b949e" font-size="13">Commits = commits auteur detectes sur les repositories accessibles • Commit contributions profil = {escape(compact_number(stats["commit_contributions"]))}</text>
   <text x="40" y="580" fill="#8b949e" font-size="13">Repos analyses: {stats["repositories"]} • {escape(scope_note)} • Genere le {escape(stats["generated_at"])}</text>
 </svg>
 """
