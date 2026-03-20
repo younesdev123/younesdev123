@@ -27,6 +27,18 @@ jobs:
         env:
           PROFILE_USERNAME: ${{ vars.GITHUB_PROFILE_USERNAME || github.repository_owner }}
           GITHUB_STATS_TOKEN: ${{ secrets.PRIVATE_STATS_TOKEN != '' && secrets.PRIVATE_STATS_TOKEN || secrets.GITHUB_TOKEN }}
+          GITHUB_STATS_TOKENS: |
+            ${{ secrets.PRIVATE_STATS_TOKEN_USER }}
+            ${{ secrets.PRIVATE_STATS_TOKEN_ORG_1 }}
+            ${{ secrets.PRIVATE_STATS_TOKEN_ORG_2 }}
+            ${{ secrets.PRIVATE_STATS_TOKEN_ORG_3 }}
+            ${{ secrets.PRIVATE_STATS_TOKEN_ORG_4 }}
+            ${{ secrets.PRIVATE_STATS_TOKEN_ORG_5 }}
+            ${{ secrets.PRIVATE_STATS_TOKEN_ORG_6 }}
+            ${{ secrets.PRIVATE_STATS_TOKEN_ORG_7 }}
+            ${{ secrets.PRIVATE_STATS_TOKEN_ORG_8 }}
+            ${{ secrets.PRIVATE_STATS_TOKEN_ORG_9 }}
+            ${{ secrets.PRIVATE_STATS_TOKEN_ORG_10 }}
           STATS_OUTPUT: generated/stats.svg
         run: python scripts/stats.py
 

@@ -24,6 +24,33 @@ def require_env(name: str) -> str:
     return value
 
 
+def parse_tokens() -> list[str]:
+    tokens: list[str] = []
+    raw_multi = os.getenv("GITHUB_STATS_TOKENS", "")
+    fallback_token = os.getenv("GITHUB_STATS_TOKEN", "").strip()
+
+    for line in raw_multi.splitlines():
+        token = line.strip()
+        if token:
+            tokens.append(token)
+
+    if fallback_token:
+        tokens.append(fallback_token)
+
+    deduped_tokens: list[str] = []
+    seen_tokens: set[str] = set()
+    for token in tokens:
+        if token in seen_tokens:
+            continue
+        seen_tokens.add(token)
+        deduped_tokens.append(token)
+
+    if not deduped_tokens:
+        raise RuntimeError("Aucun token GitHub exploitable n'a ete fourni.")
+
+    return deduped_tokens
+
+
 def github_request(url: str, token: str, method: str = "GET", data: dict[str, Any] | None = None) -> Any:
     headers = {
         "Accept": "application/vnd.github+json",
@@ -63,10 +90,19 @@ def get_authenticated_login(token: str) -> str | None:
     return user.get("login")
 
 
+def get_authenticated_user(token: str) -> dict[str, Any] | None:
+    try:
+        return github_request(f"{API_REST}/user", token)
+    except RuntimeError:
+        return None
+
+
 def fetch_all_repositories(username: str, token: str) -> list[dict[str, Any]]:
     repos: list[dict[str, Any]] = []
-    auth_login = get_authenticated_login(token)
+    auth_user = get_authenticated_user(token)
+    auth_login = auth_user.get("login") if auth_user else None
     use_authenticated_endpoint = auth_login is not None and auth_login.lower() == username.lower()
+    seen_repo_ids: set[int] = set()
 
     page = 1
     while True:
@@ -74,7 +110,7 @@ def fetch_all_repositories(username: str, token: str) -> list[dict[str, Any]]:
             params = urlencode(
                 {
                     "visibility": "all",
-                    "affiliation": "owner",
+                    "affiliation": "owner,organization_member,collaborator",
                     "sort": "updated",
                     "per_page": 100,
                     "page": page,
@@ -96,7 +132,12 @@ def fetch_all_repositories(username: str, token: str) -> list[dict[str, Any]]:
         if not current_page:
             break
 
-        repos.extend(current_page)
+        for repo in current_page:
+            repo_id = repo.get("id")
+            if repo_id in seen_repo_ids:
+                continue
+            seen_repo_ids.add(repo_id)
+            repos.append(repo)
         if len(current_page) < 100:
             break
         page += 1
@@ -104,10 +145,44 @@ def fetch_all_repositories(username: str, token: str) -> list[dict[str, Any]]:
     return repos
 
 
-def aggregate_languages(repositories: list[dict[str, Any]], token: str) -> list[tuple[str, int]]:
+def fetch_accessible_repositories(token: str) -> list[tuple[dict[str, Any], str]]:
+    repos: list[tuple[dict[str, Any], str]] = []
+    seen_repo_ids: set[int] = set()
+    page = 1
+
+    while True:
+        params = urlencode(
+            {
+                "visibility": "all",
+                "affiliation": "owner,organization_member,collaborator",
+                "sort": "updated",
+                "per_page": 100,
+                "page": page,
+            }
+        )
+        url = f"{API_REST}/user/repos?{params}"
+        current_page = github_request(url, token)
+        if not current_page:
+            break
+
+        for repo in current_page:
+            repo_id = repo.get("id")
+            if repo_id in seen_repo_ids:
+                continue
+            seen_repo_ids.add(repo_id)
+            repos.append((repo, token))
+
+        if len(current_page) < 100:
+            break
+        page += 1
+
+    return repos
+
+
+def aggregate_languages(repositories: list[tuple[dict[str, Any], str]]) -> list[tuple[str, int]]:
     language_totals: dict[str, int] = defaultdict(int)
 
-    for repo in repositories:
+    for repo, token in repositories:
         if repo.get("fork") or repo.get("archived") or repo.get("disabled"):
             continue
 
@@ -126,7 +201,7 @@ def aggregate_languages(repositories: list[dict[str, Any]], token: str) -> list[
     return sorted(language_totals.items(), key=lambda item: item[1], reverse=True)
 
 
-def fetch_stats(username: str, token: str) -> dict[str, Any]:
+def fetch_stats(username: str, tokens: list[str]) -> dict[str, Any]:
     end_date = datetime.now(timezone.utc)
     start_date = end_date - timedelta(days=365)
 
@@ -157,13 +232,31 @@ def fetch_stats(username: str, token: str) -> dict[str, Any]:
         "issueQuery": f"author:{username} is:issue created:>={start_date.date().isoformat()}",
     }
 
-    data = graphql(query, variables, token)
+    primary_token = tokens[0]
+    data = graphql(query, variables, primary_token)
     user = data.get("user")
     if not user:
         raise RuntimeError(f"Utilisateur GitHub introuvable: {username}")
 
-    repositories = fetch_all_repositories(username, token)
-    languages = aggregate_languages(repositories, token)
+    repositories: list[tuple[dict[str, Any], str]] = []
+    seen_repo_ids: set[int] = set()
+    for token in tokens:
+        try:
+            current_repositories = fetch_accessible_repositories(token)
+        except RuntimeError:
+            continue
+
+        for repo, repo_token in current_repositories:
+            repo_id = repo.get("id")
+            if repo_id in seen_repo_ids:
+                continue
+            seen_repo_ids.add(repo_id)
+            repositories.append((repo, repo_token))
+
+    if not repositories:
+        repositories = [(repo, primary_token) for repo in fetch_all_repositories(username, primary_token)]
+
+    languages = aggregate_languages(repositories)
 
     return {
         "username": username,
@@ -175,7 +268,7 @@ def fetch_stats(username: str, token: str) -> dict[str, Any]:
         "issues": data["issues"]["issueCount"],
         "languages": languages,
         "repositories": len(repositories),
-        "private_enabled": any(repo.get("private") for repo in repositories),
+        "private_enabled": any(repo.get("private") for repo, _ in repositories),
     }
 
 
@@ -189,7 +282,7 @@ def compact_number(value: int) -> str:
 
 def render_svg(stats: dict[str, Any]) -> str:
     width = 860
-    height = 540
+    height = 620
 
     colors = ["#58a6ff", "#3fb950", "#f2cc60", "#ff7b72", "#bc8cff"]
     top_languages = stats["languages"][:5]
@@ -205,7 +298,7 @@ def render_svg(stats: dict[str, Any]) -> str:
     card_svg: list[str] = []
     for index, (label, value, accent) in enumerate(cards):
         x = 40 + (index % 2) * 390
-        y = 120 + (index // 2) * 110
+        y = 132 + (index // 2) * 112
         card_svg.append(
             f"""
             <g transform="translate({x},{y})">
@@ -219,10 +312,10 @@ def render_svg(stats: dict[str, Any]) -> str:
 
     language_svg: list[str] = []
     bar_x = 40
-    bar_y = 365
+    bar_y = 408
     current_x = bar_x
     bar_width = 780
-    bar_height = 20
+    bar_height = 18
 
     for index, (language, size) in enumerate(top_languages):
         segment_width = max(bar_width * size / total_language_size, 8)
@@ -234,23 +327,32 @@ def render_svg(stats: dict[str, Any]) -> str:
         current_x += segment_width
 
     legend_svg: list[str] = []
-    legend_y = 420
+    legend_y = 458
     for index, (language, size) in enumerate(top_languages):
         percent = (size / total_language_size) * 100
         x = 40 + (index % 2) * 390
-        y = legend_y + (index // 2) * 34
+        y = legend_y + (index // 2) * 42
         color = colors[index % len(colors)]
         legend_svg.append(
             f"""
             <g transform="translate({x},{y})">
               <circle cx="8" cy="8" r="8" fill="{color}" />
-              <text x="24" y="12" fill="#c9d1d9" font-size="15">{escape(language)}</text>
-              <text x="220" y="12" fill="#8b949e" font-size="15">{percent:.1f}%</text>
+              <text x="24" y="12" fill="#c9d1d9" font-size="15" font-weight="600">{escape(language)}</text>
+              <text x="290" y="12" fill="#8b949e" font-size="14" text-anchor="end">{percent:.1f}%</text>
             </g>
             """
         )
 
-    private_note = "Repos prives inclus" if stats["private_enabled"] else "Repos publics uniquement"
+    if top_languages:
+        languages_block = "".join(language_svg) + "".join(legend_svg)
+    else:
+        languages_block = """
+        <text x="40" y="470" fill="#8b949e" font-size="15">
+          Aucun langage exploitable trouve dans les repositories accessibles.
+        </text>
+        """
+
+    scope_note = "Repos prives, orga et collaborations inclus" if stats["private_enabled"] else "Repos publics accessibles uniquement"
 
     return f"""<svg width="{width}" height="{height}" viewBox="0 0 {width} {height}" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="GitHub profile statistics">
   <defs>
@@ -261,25 +363,29 @@ def render_svg(stats: dict[str, Any]) -> str:
   </defs>
   <rect width="{width}" height="{height}" rx="28" fill="url(#bg)" />
   <rect x="16" y="16" width="{width - 32}" height="{height - 32}" rx="20" fill="transparent" stroke="#30363d" />
+  <style>
+    text {{
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Ubuntu, "Helvetica Neue", Arial, sans-serif;
+    }}
+  </style>
   <text x="40" y="62" fill="#f0f6fc" font-size="30" font-weight="700">@{escape(stats["username"])}</text>
   <text x="40" y="92" fill="#8b949e" font-size="16">Statistiques GitHub dynamiques • {escape(stats["period_label"])}</text>
   {''.join(card_svg)}
-  <text x="40" y="346" fill="#f0f6fc" font-size="22" font-weight="700">Langages les plus utilises</text>
-  <text x="40" y="392" fill="#8b949e" font-size="14">Calcul base sur les octets declares par repository via l'API GitHub</text>
-  {''.join(language_svg)}
-  {''.join(legend_svg)}
-  <text x="40" y="510" fill="#8b949e" font-size="13">Repos analyses: {stats["repositories"]} • {escape(private_note)} • Genere le {escape(stats["generated_at"])}</text>
+  <text x="40" y="372" fill="#f0f6fc" font-size="22" font-weight="700">Langages les plus utilises</text>
+  <text x="40" y="394" fill="#8b949e" font-size="14">Base sur les repositories accessibles via l'API GitHub et le token fourni</text>
+  {languages_block}
+  <text x="40" y="580" fill="#8b949e" font-size="13">Repos analyses: {stats["repositories"]} • {escape(scope_note)} • Genere le {escape(stats["generated_at"])}</text>
 </svg>
 """
 
 
 def main() -> None:
     username = require_env("PROFILE_USERNAME")
-    token = require_env("GITHUB_STATS_TOKEN")
+    tokens = parse_tokens()
     output_path = Path(os.getenv("STATS_OUTPUT", "generated/stats.svg"))
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
-    stats = fetch_stats(username, token)
+    stats = fetch_stats(username, tokens)
     svg = render_svg(stats)
     output_path.write_text(svg, encoding="utf-8")
 
