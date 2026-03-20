@@ -70,10 +70,8 @@ La majorité de mes projets sont privés (projets clients et outils personnels).
 
 ## 🐍 Contributions
 
-![Snake animation](https://github.com/younesdev123/.github/blob/output/github-contribution-grid-snake.svg)
+![Snake animation](https://raw.githubusercontent.com/younesdev123/younesdev123/output/github-contribution-grid-snake.svg)
 
 ## 📊 GitHub Stats
 
-![Younesdev123 GitHub stats](https://github-readme-stats.vercel.app/api?username=younesdev123&show_icons=true&theme=tokyonight)
-
-![Top Langs](https://github-readme-stats.vercel.app/api/top-langs/?username=younesdev123&layout=compact&theme=tokyonight)
+![Statistiques GitHub dynamiques](./generated/stats.svg)
