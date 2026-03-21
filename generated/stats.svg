@@ -30,7 +30,7 @@
               <rect x="0" y="0" width="350" height="92" rx="20" fill="url(#cardGlow)" opacity="0.18" />
               <rect x="18" y="20" width="7" height="52" rx="3.5" fill="#4f8cff" />
               <text x="42" y="35" fill="#8f9bb3" font-size="13" font-weight="600" letter-spacing="0.2">Commits sur 12 mois</text>
-              <text x="42" y="68" fill="#f7f9fc" font-size="30" font-weight="800">1023</text>
+              <text x="42" y="68" fill="#f7f9fc" font-size="30" font-weight="800">1021</text>
             </g>
             
             <g transform="translate(430,172)">
@@ -117,6 +117,6 @@
               <text x="500" y="12" fill="#8f9bb3" font-size="13" text-anchor="end">1 repo</text>
             </g>
             
-  <text x="40" y="900" fill="#69748c" font-size="12">Généré le 2026-03-20 12:57 UTC</text>
+  <text x="40" y="900" fill="#69748c" font-size="12">Généré le 2026-03-21 01:54 UTC</text>
   <text x="655" y="900" fill="#8ab4ff" font-size="12" font-weight="700">Made by younesdev123</text>
 </svg>
