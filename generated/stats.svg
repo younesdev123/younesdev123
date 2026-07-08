@@ -42,35 +42,35 @@
             </g>
             
   <text x="40" y="287" fill="#f7f9fc" font-size="24" font-weight="800">Langages dominants</text>
-  <rect x="40.00" y="330" width="232.28" height="16" fill="#4f8cff" rx="6" /><rect x="272.28" y="330" width="222.32" height="16" fill="#35c759" rx="6" /><rect x="494.59" y="330" width="170.85" height="16" fill="#ffcc4d" rx="6" /><rect x="665.44" y="330" width="129.58" height="16" fill="#ff7a6b" rx="6" /><rect x="795.01" y="330" width="24.99" height="16" fill="#a974ff" rx="6" />
+  <rect x="40.00" y="330" width="300.65" height="16" fill="#4f8cff" rx="6" /><rect x="340.65" y="330" width="254.23" height="16" fill="#35c759" rx="6" /><rect x="594.88" y="330" width="176.25" height="16" fill="#ffcc4d" rx="6" /><rect x="771.12" y="330" width="33.11" height="16" fill="#ff7a6b" rx="6" /><rect x="804.23" y="330" width="15.77" height="16" fill="#a974ff" rx="6" />
             <g transform="translate(40,378)">
               <circle cx="8" cy="8" r="8" fill="#4f8cff" />
               <text x="24" y="12" fill="#c9d1d9" font-size="14" font-weight="600">JavaScript</text>
-              <text x="290" y="12" fill="#8b949e" font-size="13" text-anchor="end">29.8%</text>
+              <text x="290" y="12" fill="#8b949e" font-size="13" text-anchor="end">38.5%</text>
             </g>
             
             <g transform="translate(430,378)">
               <circle cx="8" cy="8" r="8" fill="#35c759" />
               <text x="24" y="12" fill="#c9d1d9" font-size="14" font-weight="600">HTML</text>
-              <text x="290" y="12" fill="#8b949e" font-size="13" text-anchor="end">28.5%</text>
+              <text x="290" y="12" fill="#8b949e" font-size="13" text-anchor="end">32.6%</text>
             </g>
             
             <g transform="translate(40,418)">
               <circle cx="8" cy="8" r="8" fill="#ffcc4d" />
-              <text x="24" y="12" fill="#c9d1d9" font-size="14" font-weight="600">C#</text>
-              <text x="290" y="12" fill="#8b949e" font-size="13" text-anchor="end">21.9%</text>
+              <text x="24" y="12" fill="#c9d1d9" font-size="14" font-weight="600">PHP</text>
+              <text x="290" y="12" fill="#8b949e" font-size="13" text-anchor="end">22.6%</text>
             </g>
             
             <g transform="translate(430,418)">
               <circle cx="8" cy="8" r="8" fill="#ff7a6b" />
-              <text x="24" y="12" fill="#c9d1d9" font-size="14" font-weight="600">PHP</text>
-              <text x="290" y="12" fill="#8b949e" font-size="13" text-anchor="end">16.6%</text>
+              <text x="24" y="12" fill="#c9d1d9" font-size="14" font-weight="600">CSS</text>
+              <text x="290" y="12" fill="#8b949e" font-size="13" text-anchor="end">4.2%</text>
             </g>
             
             <g transform="translate(40,458)">
               <circle cx="8" cy="8" r="8" fill="#a974ff" />
-              <text x="24" y="12" fill="#c9d1d9" font-size="14" font-weight="600">CSS</text>
-              <text x="290" y="12" fill="#8b949e" font-size="13" text-anchor="end">3.2%</text>
+              <text x="24" y="12" fill="#c9d1d9" font-size="14" font-weight="600">Lua</text>
+              <text x="290" y="12" fill="#8b949e" font-size="13" text-anchor="end">2.0%</text>
             </g>
             
   <text x="40" y="525" fill="#f7f9fc" font-size="24" font-weight="800">Frameworks récurrents</text>
@@ -117,6 +117,6 @@
               <text x="500" y="12" fill="#8f9bb3" font-size="13" text-anchor="end">1 repo</text>
             </g>
             
-  <text x="40" y="900" fill="#69748c" font-size="12">Généré le 2026-07-08 02:32 UTC</text>
+  <text x="40" y="900" fill="#69748c" font-size="12">Généré le 2026-07-08 14:01 UTC</text>
   <text x="655" y="900" fill="#8ab4ff" font-size="12" font-weight="700">Made by younesdev123</text>
 </svg>
