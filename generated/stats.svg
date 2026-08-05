@@ -42,7 +42,7 @@
             </g>
             
   <text x="40" y="287" fill="#f7f9fc" font-size="24" font-weight="800">Langages dominants</text>
-  <rect x="40.00" y="330" width="232.42" height="16" fill="#4f8cff" rx="6" /><rect x="272.42" y="330" width="221.63" height="16" fill="#35c759" rx="6" /><rect x="494.06" y="330" width="171.86" height="16" fill="#ffcc4d" rx="6" /><rect x="665.91" y="330" width="129.18" height="16" fill="#ff7a6b" rx="6" /><rect x="795.09" y="330" width="24.91" height="16" fill="#a974ff" rx="6" />
+  <rect x="40.00" y="330" width="232.46" height="16" fill="#4f8cff" rx="6" /><rect x="272.46" y="330" width="221.62" height="16" fill="#35c759" rx="6" /><rect x="494.08" y="330" width="171.84" height="16" fill="#ffcc4d" rx="6" /><rect x="665.92" y="330" width="129.17" height="16" fill="#ff7a6b" rx="6" /><rect x="795.09" y="330" width="24.91" height="16" fill="#a974ff" rx="6" />
             <g transform="translate(40,378)">
               <circle cx="8" cy="8" r="8" fill="#4f8cff" />
               <text x="24" y="12" fill="#c9d1d9" font-size="14" font-weight="600">JavaScript</text>
@@ -117,6 +117,6 @@
               <text x="500" y="12" fill="#8f9bb3" font-size="13" text-anchor="end">1 repo</text>
             </g>
             
-  <text x="40" y="900" fill="#69748c" font-size="12">Généré le 2026-08-04 14:06 UTC</text>
+  <text x="40" y="900" fill="#69748c" font-size="12">Généré le 2026-08-05 02:21 UTC</text>
   <text x="655" y="900" fill="#8ab4ff" font-size="12" font-weight="700">Made by younesdev123</text>
 </svg>
